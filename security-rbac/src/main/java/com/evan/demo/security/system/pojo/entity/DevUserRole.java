@@ -2,7 +2,7 @@ package com.evan.demo.security.system.pojo.entity;
 
 import lombok.Data;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
 @Table(name = "dev_user_role")

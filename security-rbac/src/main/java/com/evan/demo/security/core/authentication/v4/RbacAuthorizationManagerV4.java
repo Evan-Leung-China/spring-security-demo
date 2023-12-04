@@ -2,6 +2,7 @@ package com.evan.demo.security.core.authentication.v4;
 
 import cn.hutool.core.collection.CollectionUtil;
 import com.evan.demo.security.system.dao.DevRoleMenuRepositories;
+import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,7 +14,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.web.access.intercept.RequestAuthorizationContext;
 import org.springframework.stereotype.Component;
 
-import javax.servlet.http.HttpServletRequest;
 import java.util.*;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -61,7 +61,7 @@ public class RbacAuthorizationManagerV4 implements AuthorizationManager<RequestA
         }
         boolean granted = CollectionUtil.containsAny(authenticate.getAuthorities(), matchedAuthorities);
         if (!granted) {
-            logger.info("access deny. not efficient privilege for {}.", authenticate.getName());
+            logger.info("access {} deny. not efficient privilege for {}.", request.getRequestURI(), authenticate.getName());
         }
         return new AuthorizationDecision(granted);
     }

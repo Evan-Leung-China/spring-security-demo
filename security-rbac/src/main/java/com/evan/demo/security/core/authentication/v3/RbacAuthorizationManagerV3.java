@@ -3,6 +3,7 @@ package com.evan.demo.security.core.authentication.v3;
 import cn.hutool.core.collection.CollectionUtil;
 import com.evan.demo.security.core.authentication.UrlAuthorizationService;
 import com.evan.demo.security.system.pojo.dto.UpdateAuthorityDTO;
+import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,7 +16,6 @@ import org.springframework.security.web.access.intercept.RequestAuthorizationCon
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.stereotype.Component;
 
-import javax.servlet.http.HttpServletRequest;
 import java.util.*;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -61,7 +61,7 @@ public class RbacAuthorizationManagerV3 implements AuthorizationManager<RequestA
         // 与当前用户所拥有的权限进行比较
         boolean granted = CollectionUtil.containsAny(authenticate.getAuthorities(), grantedAuthorities.get());
         if (!granted) {
-            logger.info("access deny. not efficient privilege for {}.", authenticate.getName());
+            logger.info("access {} deny. not efficient privilege for {}.", request.getRequestURI(), authenticate.getName());
         }
         return new AuthorizationDecision(granted);
     }

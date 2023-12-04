@@ -7,26 +7,26 @@ import org.springframework.security.authorization.AuthorizationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.annotation.web.configurers.AbstractAuthenticationFilterConfigurer;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.intercept.RequestAuthorizationContext;
 
+/**
+ * spring security6.1.5 删除了WebSecurityConfigurerAdapter
+ */
 @Configuration
 @EnableWebSecurity
-public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
-
-    private final UserDetailsService userDetailService;
+public class WebSecurityConfig {
 
     @Autowired
     private final AuthorizationManager<RequestAuthorizationContext> authorizationManager;
 
     @Autowired
-    public WebSecurityConfig(UserDetailsService userDetailService, AuthorizationManager<RequestAuthorizationContext> rbacAuthorizationManager) {
-        this.userDetailService = userDetailService;
+    public WebSecurityConfig(AuthorizationManager<RequestAuthorizationContext> rbacAuthorizationManager) {
         this.authorizationManager = rbacAuthorizationManager;
     }
 
@@ -35,20 +35,12 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         return new BCryptPasswordEncoder();
     }
 
-    @Override
-    protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-        auth.userDetailsService(this.userDetailService).passwordEncoder(passwordEncoder());
-
-    }
-
-    @Override
-    protected void configure(HttpSecurity http) throws Exception {
-        http.formLogin(AbstractAuthenticationFilterConfigurer::permitAll)
+    @Bean
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        return http.formLogin(AbstractAuthenticationFilterConfigurer::permitAll)
                 .csrf(AbstractHttpConfigurer::disable)
-                .authorizeRequests(authorizeRequest ->
-                        authorizeRequest.antMatchers("/foo/**").authenticated()
-                )
-                .authorizeHttpRequests(authorize -> authorize.anyRequest().access(authorizationManager));
+                .authorizeHttpRequests(authorize -> authorize.anyRequest().access(authorizationManager))
+                .build();
     }
 
 }
