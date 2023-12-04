@@ -23,8 +23,6 @@
     </properties>
 
     <modules>
-        <module>security-demo</module>
-        <module>security-acl</module>
         <module>security-rbac</module>
     </modules>
 
