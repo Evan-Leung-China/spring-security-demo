@@ -24,6 +24,7 @@
 
     <modules>
         <module>security-rbac</module>
+        <module>security-rbac-diy</module>
     </modules>
 
     <dependencyManagement>
