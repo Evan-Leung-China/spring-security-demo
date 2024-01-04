@@ -1,22 +1,35 @@
 package com.evan.demo.security.core.authentication;
 
-import com.alibaba.fastjson.JSON;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.Getter;
+import org.springframework.boot.web.servlet.filter.OrderedFilter;
+import org.springframework.core.Ordered;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.AbstractAuthenticationProcessingFilter;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
-import org.springframework.security.web.util.matcher.RequestMatcher;
+import org.springframework.util.Assert;
 
 import java.io.IOException;
 
-public class AuthenticationWithKaptFilter extends AbstractAuthenticationProcessingFilter {
+/**
+ * 基于Form表单
+ */
+@Getter
+public class AuthenticationWithKaptFilter extends AbstractAuthenticationProcessingFilter implements OrderedFilter {
+
+    public static final AntPathRequestMatcher DEFAULT_PROCESS_AUTHENTICATION_ANT_MATCH = new AntPathRequestMatcher("/login", "POST");
+    private String usernameParameter;
+    private String passwordParameter;
+
     public AuthenticationWithKaptFilter(AuthenticationManager authenticationManager) {
         super(new AntPathRequestMatcher("/login", "POST"), authenticationManager);
+        usernameParameter = "username";
+        passwordParameter = "password";
     }
 
     @Override
@@ -24,8 +37,8 @@ public class AuthenticationWithKaptFilter extends AbstractAuthenticationProcessi
         // 如果使用的body传参，则通过这个获取：
         // JSON.parseObject(request.getInputStream(), LoginDTO.class);
         LoginDTO loginData = new LoginDTO();
-        loginData.setPassword(request.getParameter("password"));
-        loginData.setUsername(request.getParameter("username"));
+        loginData.setPassword(request.getParameter(passwordParameter));
+        loginData.setUsername(request.getParameter(usernameParameter));
         // 验证码校验通过
         logger.info("模拟图形验证码验证通过！");
         logger.info("正在进行账号密码校验。。。");
@@ -34,6 +47,20 @@ public class AuthenticationWithKaptFilter extends AbstractAuthenticationProcessi
         Authentication authenticate = getAuthenticationManager().authenticate(authRequest);
         logger.info("认证成功!");
         return authenticate;
+    }
+
+    public void setUsernameParameter(String usernameParameter) {
+        Assert.hasText(usernameParameter, "Username parameter must not be empty or null");
+        this.usernameParameter = usernameParameter;
+    }
+    public void setPasswordParameter(String passwordParameter) {
+        Assert.hasText(passwordParameter, "Password parameter must not be empty or null");
+        this.passwordParameter = passwordParameter;
+    }
+
+    @Override
+    public int getOrder() {
+        return 1999;
     }
 
     class LoginDTO{

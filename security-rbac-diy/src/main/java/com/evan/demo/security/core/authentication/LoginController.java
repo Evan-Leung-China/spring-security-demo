@@ -31,7 +31,7 @@ import java.io.IOException;
  *
  * @see <a href="https://docs.spring.io/spring-security/reference/servlet/authentication/passwords/index.html#customize-global-authentication-manager>自定义全局AuthenticationManager</a>
  */
-@RestController
+//@RestController
 public class LoginController {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
     private final AuthenticationManager authenticationManager;

@@ -14,24 +14,33 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.context.SecurityContextHolderStrategy;
+import org.springframework.security.core.session.SessionRegistry;
+import org.springframework.security.core.session.SessionRegistryImpl;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.intercept.RequestAuthorizationContext;
 import org.springframework.security.web.authentication.*;
-import org.springframework.security.web.authentication.session.SessionAuthenticationStrategy;
-import org.springframework.security.web.authentication.session.SessionFixationProtectionStrategy;
+import org.springframework.security.web.authentication.session.*;
 import org.springframework.security.web.authentication.ui.DefaultLoginPageGeneratingFilter;
 import org.springframework.security.web.authentication.ui.DefaultLogoutPageGeneratingFilter;
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.security.web.context.SecurityContextRepository;
 import org.springframework.security.web.savedrequest.HttpSessionRequestCache;
 import org.springframework.security.web.savedrequest.RequestCache;
+import org.springframework.security.web.session.ConcurrentSessionFilter;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+
+import java.util.List;
 
 /**
  * spring security6.1.5 删除了WebSecurityConfigurerAdapter
+ * <p>
+ * 当前配置虽然能用，但如果配置session并发控制则该功能会不生效。因为我们先生成了认证过滤器，并为此提前创建了sessionAuthenticationStrategy。这导致配置并发控制时引入的sessionAuthenticationStrategy没有被认证过滤器所使用。
+ * <p>如果我们希望并发控制生效，又想使用sessionManagementConfigurer进行配置，则不能这么做。需要自定义认证过滤器的Configurer。</p>
+ * <p>如果我们希望并发控制生效，不使用sessionManagementConfigurer配置的话，则需要提前把相关的sessionAuthenticationStrategy配置好。</p>
+ * <p>为了便于配置推荐使用自定义Configurer的方式。</p>
  */
 @Configuration
 @EnableWebSecurity
@@ -59,21 +68,32 @@ public class WebSecurityConfig {
         SecurityContextRepository securityContextRepository = securityContextRepository();
         // RequestCache需要被ExceptionTranslateFilter共享，以便保存认证前的请求进行恢复。
         SecurityContextHolder.setStrategyName(SecurityContextHolder.MODE_THREADLOCAL);
-        SecurityContextHolderStrategy securityContextHolderStrategy = SecurityContextHolder.getContextHolderStrategy();
-        SessionAuthenticationStrategy sessionAuthenticationStrategy = new SessionFixationProtectionStrategy();
+        SessionRegistryImpl sessionRegistry = new SessionRegistryImpl();
+
+        SessionAuthenticationStrategy sessionAuthenticationStrategy = new CompositeSessionAuthenticationStrategy(
+                List.of(new SessionFixationProtectionStrategy(),
+                        new RegisterSessionAuthenticationStrategy(sessionRegistry),
+                        new ConcurrentSessionControlAuthenticationStrategy(sessionRegistry))
+        );
+
         RequestCache requestCache = requestCache();
         SavedRequestAwareAuthenticationSuccessHandler successHandler = new SavedRequestAwareAuthenticationSuccessHandler();
         successHandler.setRequestCache(requestCache);
-        successHandler.setDefaultTargetUrl("/login");
+        successHandler.setDefaultTargetUrl("/");
+
+        SecurityContextHolderStrategy securityContextHolderStrategy = SecurityContextHolder.getContextHolderStrategy();
 
         http.setSharedObject(SecurityContextHolderStrategy.class, securityContextHolderStrategy);
         http.setSharedObject(SecurityContextRepository.class, securityContextRepository);
         http.setSharedObject(SessionAuthenticationStrategy.class, sessionAuthenticationStrategy);
         http.setSharedObject(RequestCache.class, requestCache);
+        http.setSharedObject(SessionRegistry.class, sessionRegistry);
 
 
         AuthenticationWithKaptFilter authenticationFilter = getAuthenticationWithKaptFilter(securityContextHolderStrategy,
                 sessionAuthenticationStrategy, successHandler, sessionAuthenticationStrategy);
+        authenticationFilter.setPasswordParameter("password");
+        authenticationFilter.setUsernameParameter("username");
 
         return http
 //                .formLogin(Customizer.withDefaults())
@@ -86,12 +106,19 @@ public class WebSecurityConfig {
                 .exceptionHandling(config -> config.authenticationEntryPoint(new LoginUrlAuthenticationEntryPoint("/login")))
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers("/login","/foo/login").permitAll()
+                        .requestMatchers("/login", "/foo/login").permitAll()
                         .anyRequest().access(authorizationManager))
-                .sessionManagement(configurer -> configurer.sessionAuthenticationStrategy(sessionAuthenticationStrategy))
+                .sessionManagement(configurer -> configurer
+//                        .sessionAuthenticationStrategy(sessionAuthenticationStrategy)
+                        // 此配置要求在其他地方显式调用sessionAuthenticationStrategy，同时不能设置sessionAuthenticationStrategy
+                        // 因为他相当于不使用SessionManagerFilter管理session
+                        // 而且会导致session并发控制失效，因为我们时提前生成好了sessionAuthenticationStrategy，除非我们手动的将这些设置好。
+                        // 但是，还需要手动引入session并发控制过滤器。否则如果又使用sessionConfigurer进行设置，会导致使用的sessionAuthenticationStrategy与认证过滤器不同而导致问题。
+                        .requireExplicitAuthenticationStrategy(true))
                 .addFilter(loginPageFilter)
                 .addFilterBefore(authenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .addFilter(new DefaultLogoutPageGeneratingFilter())
+                .addFilter(new ConcurrentSessionFilter(sessionRegistry))
                 .build();
     }
 
@@ -122,7 +149,7 @@ public class WebSecurityConfig {
     }
 
     @Configuration
-    public static class AuthenticationManagerConfig{
+    public static class AuthenticationManagerConfig {
 
         @Bean
         public PasswordEncoder passwordEncoder() {
