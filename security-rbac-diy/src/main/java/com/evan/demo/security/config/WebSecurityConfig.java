@@ -1,6 +1,7 @@
 package com.evan.demo.security.config;
 
 import com.evan.demo.security.core.authentication.AuthenticationWithKaptFilter;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -118,7 +119,13 @@ public class WebSecurityConfig {
                 .addFilter(loginPageFilter)
                 .addFilterBefore(authenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .addFilter(new DefaultLogoutPageGeneratingFilter())
-                .addFilter(new ConcurrentSessionFilter(sessionRegistry))
+                .addFilter(new ConcurrentSessionFilter(sessionRegistry,  event -> {
+                    HttpServletResponse response1 = event.getResponse();
+                    response1.setContentType("text/html;charset=utf-8");
+                    response1.getWriter().print("<html><head><meta http-equiv='Content-Type' content='text/html;charset=utf-8' /></head>" +
+                            "<body><div>你的账号存在多处登录，请确认账号安全。必要时请修改密码！</div></body></html>");
+                    response1.flushBuffer();
+                }))
                 .build();
     }
 
