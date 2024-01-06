@@ -25,6 +25,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.intercept.RequestAuthorizationContext;
 import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
+import org.springframework.security.web.csrf.CsrfFilter;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 /**
  * spring security6.1.5 删除了WebSecurityConfigurerAdapter
@@ -61,7 +63,8 @@ public class WebSecurityConfigV2 {
 //                })
                 // 配置登录请求页面，以便访问异常时重定向，会自动设置为UsernamePasswordTokenAuthenticationFilter处理的登录接口的
 //                .exceptionHandling(config -> config.authenticationEntryPoint(new LoginUrlAuthenticationEntryPoint("/login")))
-                .csrf(Customizer.withDefaults())
+                // 默认只对修改服务器状态的接口进行Crsf防御：POST、PUT、DELETE等等
+                .csrf(configurer -> configurer.requireCsrfProtectionMatcher(CsrfFilter.DEFAULT_CSRF_MATCHER))
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers("/login", "/error").permitAll()
                         .anyRequest().access(authorizationManager))
