@@ -54,14 +54,14 @@ public class WebSecurityConfigV2 {
 
         return http
                 .authenticationManager(authenticationManager)
-                .formLogin(AbstractAuthenticationFilterConfigurer::permitAll)
+                .formLogin(configurer -> configurer.loginPage("/login").permitAll())
 //                .exceptionHandling(config -> {
 //                    AccessDeniedHandler accessDeniedHandler = (request, response, accessDeniedException) -> response.getWriter().write(accessDeniedException.getMessage());
 //                    config.accessDeniedHandler(accessDeniedHandler);
 //                })
                 // 配置登录请求页面，以便访问异常时重定向，会自动设置为UsernamePasswordTokenAuthenticationFilter处理的登录接口的
 //                .exceptionHandling(config -> config.authenticationEntryPoint(new LoginUrlAuthenticationEntryPoint("/login")))
-                .csrf(AbstractHttpConfigurer::disable)
+                .csrf(Customizer.withDefaults())
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers("/login", "/error").permitAll()
                         .anyRequest().access(authorizationManager))
