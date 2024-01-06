@@ -48,12 +48,8 @@ spring:
 #          auto: update
         dialect: org.hibernate.dialect.MySQLDialect
 dev-security:
-  # 授权管理版本
-  # v1。也即第一个版本:延用spring-security的GrantedAuthority
-  # v2。定制UserDetails，绕开GrantedAuthority
-  # v3。也即第一个版本:延用spring-security的GrantedAuthority
-  # v4。也即第一个版本:延用spring-security的GrantedAuthority
-  version: v4
+  #
+  version: dv2
   login-process-url: /login
 
 

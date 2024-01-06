@@ -3,6 +3,7 @@ package com.evan.demo.security.config;
 import com.evan.demo.security.core.authentication.AuthenticationWithKaptFilter;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AccountStatusUserDetailsChecker;
@@ -45,6 +46,7 @@ import java.util.List;
  */
 @Configuration
 @EnableWebSecurity
+@ConditionalOnProperty(prefix = "dev-security", name = "version", havingValue = "dv1", matchIfMissing = true)
 public class WebSecurityConfig {
 
     @Autowired
@@ -156,6 +158,7 @@ public class WebSecurityConfig {
     }
 
     @Configuration
+    @ConditionalOnProperty(prefix = "dev-security", name = "version", havingValue = "dv1", matchIfMissing = true)
     public static class AuthenticationManagerConfig {
 
         @Bean
