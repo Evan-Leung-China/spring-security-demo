@@ -30,9 +30,9 @@
     <modules>
         <module>security-rbac</module>
         <module>security-rbac-diy</module>
-        <module>spring-security-01</module>
-        <module>spring-security-02</module>
-        <module>spring-security-03</module>
+        <module>encrypted-authentication-01</module>
+        <module>encrypted-authentication-02</module>
+        <module>encrypted-authentication-03</module>
     </modules>
 
     <dependencyManagement>

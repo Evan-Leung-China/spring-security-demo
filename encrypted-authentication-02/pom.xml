@@ -11,11 +11,10 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <groupId>com.evan.demo</groupId>
-    <artifactId>encrypted-authentication-03</artifactId>
+    <artifactId>encrypted-authentication-02</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>remember-me</name>
-    <description>A Sample Project For Spring Security With RememberMe</description>
+    <name>security-with-authentication-manager</name>
+    <description>A Sample Project For Spring Security With AuthenticationManager</description>
 
     <packaging>jar</packaging>
 
@@ -108,7 +107,7 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <configuration>
-                    <mainClass>com.evan.example.web.RememberMeApplication</mainClass>
+                    <mainClass>com.evan.example.web.SecurityWithAuthenticationManagerApplication</mainClass>
                 </configuration>
             </plugin>
 
