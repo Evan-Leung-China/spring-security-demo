@@ -1,0 +1,16 @@
+server:
+  port: 8080
+  servlet:
+    session:
+      timeout: 1m
+
+logging:
+  level:
+    org.springframework.security: DEBUG
+
+spring:
+  jackson:
+    serialization:
+      fail-on-empty-beans: false
+    default-property-inclusion: non_null
+
