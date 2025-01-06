@@ -57,6 +57,7 @@ public class DevUserDetailServiceV1 implements UserDetailsService {
                 .password(user.getPassword())
                 .accountLocked(user.getLock())
                 .roleIdList(roleIdList)
+                .authorities(simpleGrantedAuthorities)
                 // TODO：禁用
                 .disabled(false)
                 // TODO: 账号期限
