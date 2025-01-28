@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>登录页面</title>
+    <!-- 引入crypto-js库 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    <style>
+        /* 设置页面整体样式 */
+        body {
+            display: flex;
+            justify-content: center; /* 水平居中 */
+            align-items: center; /* 垂直居中 */
+            height: 100vh; /* 视口高度 */
+            margin: 0;
+            font-size: 20px; /* 增大字体大小 */
+            background-color: #f0f0f0; /* 背景颜色（可选） */
+        }
+        /* 设置表单样式 */
+        form {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 500px; /* 设置表单宽度 */
+            font-size: 20px; /* 增大字体大小 */
+        }
+        /* 设置表单元素样式 */
+        .form-group {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: flex;
+            margin-right: 10px;
+            margin-top: 5px;
+            height: 55px;
+        }
+        #username, #password {
+            display: flex;
+            height: 50px;
+            margin-top: 5px;
+            margin-right: 20px;
+            font-size: 20px; /* 增大字体大小 */
+            width: 98%; /* 输入框宽度 */
+        }
+        .captcha-group {
+            display: inline-block; /* 设置验证码组为内联块级元素 */
+            height: 50px;
+            margin-top: 5px;
+            margin-right: 20px;
+            font-size: 20px; /* 增大字体大小 */
+        }
+        #captcha {
+            height: 50px;
+            margin-top: 0px;
+            font-size: 20px; /* 增大字体大小 */
+            width: 48%; /* 输入框宽度 */
+        }
+        #captchaImg {
+            height: 50px;
+            margin-top: 5px;
+            margin-right: 20px;
+        }
+        /* 设置按钮样式 */
+        button {
+            margin-top: 25px;
+            width: 98%; /* 输入框宽度 */
+            height: 55px;
+            font-size: 20px; /* 增大字体大小 */
+        }
+    </style>
+</head>
+<body>
+<form id="loginForm">
+    <label for="username">用户名：</label><br/>
+    <input type="text" id="username" name="username" placeholder="请输入用户名" required  /><br/>
+
+    <label for="password">密码：</label><br/>
+    <input type="password" id="password" name="password" placeholder="请输入密码" required /><br/>
+    <!-- 验证码组 -->
+    <label for="captcha">验证码：</label><br/>
+    <div class="captcha-group">
+        <input type="text" id="captcha" name="captcha" placeholder="请输入验证码" required />
+        <img th:src="@{/captcha}" alt="验证码" id="captchaImg" />
+    </div>
+
+    <button type="button" onclick="submitForm()">登录</button> <!-- 修改为button并添加点击事件 -->
+</form>
+
+<script>
+    // 页面加载完成后获取验证码图片
+    document.addEventListener("DOMContentLoaded", function() {
+        refreshCaptcha();
+    });
+
+    // 刷新验证码图片函数
+    function refreshCaptcha() {
+        var captchaImg = document.getElementById('captchaImg');
+        captchaImg.src = '/captcha?' + new Date().getTime(); // 添加时间戳防止缓存
+    }
+    // AES加密函数
+    function aesEncrypt(data, key) {
+        var keyWordArray = CryptoJS.enc.Utf8.parse(key);
+        var ivWordArray = CryptoJS.enc.Utf8.parse(key.substring(0, 16));
+        var jsonBody = JSON.stringify(data);
+        console.log("keyWordArray:" + keyWordArray); // 打印参数
+        console.log("ivWordArray:" + ivWordArray); // 打印参数
+        console.log("jsonBody:" + jsonBody); // 打印参数
+        var encrypted = CryptoJS.AES.encrypt(jsonBody, keyWordArray, {
+            iv: ivWordArray,
+            mode: CryptoJS.mode.CBC,
+            padding: CryptoJS.pad.Pkcs7
+        });
+        return encrypted.toString();
+    }
+
+    // 提交表单函数
+    function submitForm() {
+        var username = document.getElementById('username').value;
+        var password = document.getElementById('password').value;
+        var captcha = document.getElementById('captcha').value;
+
+        console.log(username, password, captcha); // 打印参数
+        // 构建JSON对象
+        var data = {
+            username: username,
+            password: password,
+            captcha: captcha
+        };
+        console.log(data); // 打印参数
+
+        // 加密参数
+        var key = "abcdef1234567890"; // 替换为你的16字节密钥
+        var encryptedData = aesEncrypt(data, key);
+        console.log(encryptedData); // 打印加密后的参数
+
+        // 发送POST请求
+        fetch('/login', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json' // 设置请求头为JSON
+            },
+            body: encryptedData
+        }).then(response => response.json())
+          .then(data => {
+              // 处理响应
+              console.log(data);
+          }).catch(error => {
+              // 处理错误
+              console.error('Error:', error);
+          });
+    }
+
+    // 刷新验证码图片
+    document.getElementById('captchaImg').onclick = function() {
+        this.src = '/captcha?' + new Date().getTime();
+    };
+</script>
+</body>
+</html>

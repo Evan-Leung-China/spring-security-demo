@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>错误页面</title>
+</head>
+<body>
+    <h1>出错了！</h1>
+    <!-- 显示错误状态码 -->
+    <p>状态码：<span th:text="${status}"></span></p>
+    <!-- 显示错误消息（如果有） -->
+    <p th:if="${message != null}">错误消息：<span th:text="${message}"></span></p>
+</body>
+</html>

@@ -1,5 +1,6 @@
 package com.evan.demo.security.config;
 
+import com.evan.demo.security.core.authentication.UrlAuthorizationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -14,6 +15,10 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.intercept.RequestAuthorizationContext;
+import org.springframework.util.CollectionUtils;
+
+import java.util.List;
+import java.util.Map;
 
 /**
  * spring security6.1.5 删除了WebSecurityConfigurerAdapter
@@ -35,11 +40,24 @@ public class WebSecurityConfig {
         return new BCryptPasswordEncoder();
     }
 
+    @Autowired
+    private UrlAuthorizationService urlAuthorizationService;
+
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+
         return http.formLogin(AbstractAuthenticationFilterConfigurer::permitAll)
                 .csrf(AbstractHttpConfigurer::disable)
-                .authorizeHttpRequests(authorize -> authorize.anyRequest().access(authorizationManager))
+                .authorizeHttpRequests(authorize -> {
+//                    authorize.anyRequest().access(authorizationManager);
+                    Map<String, List<String>> uriRoleList = urlAuthorizationService.buildUrlAuthorizationMap();
+                    if (CollectionUtils.isEmpty(uriRoleList)) {
+                        return;
+                    }
+                    uriRoleList.forEach((uri, roles) -> {
+                        authorize.requestMatchers(uri).hasAnyRole(roles.toArray(new String[0]));
+                    });
+                })
                 .build();
     }
 

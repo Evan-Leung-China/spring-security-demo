@@ -25,11 +25,12 @@
         <commons-collections4.version>4.4</commons-collections4.version>
         <commons-beanutils.version>1.9.4</commons-beanutils.version>
         <commons-lang.version>2.6</commons-lang.version>
+        <kaptcha.version>2.3.2</kaptcha.version>
     </properties>
 
     <modules>
         <module>security-rbac</module>
-        <module>security-rbac-diy</module>
+        <module>security-manager</module>
         <module>encrypted-authentication-01</module>
         <module>encrypted-authentication-02</module>
         <module>encrypted-authentication-03</module>
@@ -79,6 +80,12 @@
                 <artifactId>commons-lang</artifactId>
                 <version>${commons-lang.version}</version>
             </dependency>
+            <dependency>
+                <groupId>com.github.penggle</groupId>
+                <artifactId>kaptcha</artifactId>
+                <version>${kaptcha.version}</version>
+            </dependency>
+
         </dependencies>
     </dependencyManagement>
 

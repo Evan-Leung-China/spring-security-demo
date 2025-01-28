@@ -107,7 +107,7 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <configuration>
-                    <mainClass>com.evan.example.web.SecurityWithAuthenticationManagerApplication</mainClass>
+                    <mainClass>com.evan.demo.security.SecurityWithAuthenticationManagerApplication</mainClass>
                 </configuration>
             </plugin>
 

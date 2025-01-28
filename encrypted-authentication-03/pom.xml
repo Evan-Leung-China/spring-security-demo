@@ -107,7 +107,7 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <configuration>
-                    <mainClass>com.evan.example.web.RememberMeApplication</mainClass>
+                    <mainClass>com.evan.demo.security.RememberMeApplication</mainClass>
                 </configuration>
             </plugin>
 

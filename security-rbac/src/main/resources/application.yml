@@ -21,7 +21,7 @@ spring:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://localhost:3306/security_dev?useUnicode=true&zeroDateTimeBehavior=convertToNull&useSSL=true&serverTimezone=GMT%2B8
     username: evan
-    password: evan
+    password: evan@1234
 #    initialization-mode: NEVER
     hikari:
       # 连接超时：3s
@@ -53,7 +53,7 @@ dev-security:
   # v2。定制UserDetails，绕开GrantedAuthority
   # v3。也即第一个版本:延用spring-security的GrantedAuthority
   # v4。也即第一个版本:延用spring-security的GrantedAuthority
-  version: v4
+  version: v1
   login-process-url: /login
 
 

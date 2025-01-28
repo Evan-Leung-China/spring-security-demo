@@ -103,7 +103,7 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <configuration>
-                    <mainClass>com.evan.example.web.SecurityWithoutAuthenticationManagerApplication</mainClass>
+                    <mainClass>com.evan.demo.security.SecurityWithoutAuthenticationManagerApplication</mainClass>
                 </configuration>
             </plugin>
 
